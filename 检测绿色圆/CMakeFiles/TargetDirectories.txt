@@ -1,3 +1,0 @@
-/home/zxc/桌面/C++/检测绿色圆/CMakeFiles/rebuild_cache.dir
-/home/zxc/桌面/C++/检测绿色圆/CMakeFiles/edit_cache.dir
-/home/zxc/桌面/C++/检测绿色圆/CMakeFiles/main.dir
