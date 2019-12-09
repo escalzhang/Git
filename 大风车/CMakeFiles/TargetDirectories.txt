@@ -1,0 +1,3 @@
+/home/escalzhang/桌面/Git/大风车/CMakeFiles/edit_cache.dir
+/home/escalzhang/桌面/Git/大风车/CMakeFiles/rebuild_cache.dir
+/home/escalzhang/桌面/Git/大风车/CMakeFiles/main.dir

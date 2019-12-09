@@ -131,34 +131,8 @@ int main( int argc, char** argv )
 		
 		}
 		imshow("111",srcImage);
-		//imshow( "轮廓图", dstImage );
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/*
-	//画出轮廓
-	int index = 0;
-	for( ; index >= 0; index = hierarchy[index][0] )
-	{
 		
-		drawContours( dstImage, contours, index, Scalar(0,0,255), 1, 8, hierarchy );
-	}
 
-	imshow( "轮廓图", dstImage );
-	*/
 
 	waitKey(0);
 
