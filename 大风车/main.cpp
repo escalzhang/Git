@@ -130,7 +130,7 @@ int main( int argc, char** argv )
 		
 		
 		}
-		imshow("111",srcImage);
+		imshow("final",srcImage);
 		
 
 
