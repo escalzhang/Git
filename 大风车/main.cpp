@@ -28,16 +28,19 @@ int main( int argc, char** argv )
 
 
 	//过滤颜色
-	//Mat midImage2 = imgChannels.at(2)-imgChannels.at(0);
+	//敌人为蓝色
+	//Mat midImage2 = imgChannels.at(0)-imgChannels.at(2);
+	
+	//敌人为红色
 	Mat midImage2 = imgChannels.at(2)-imgChannels.at(0);
 	
 	//二值化
 	threshold(midImage2,midImage2,100,255,THRESH_BINARY);
-    //imshow("二值化图像",midImage2);
+   	 //imshow("二值化图像",midImage2);
 	
 	//图像形态学操作：膨胀和开操作
 	int elementsize=2;
-	Mat kernel= getStructuringElement(MORPH_RECT,Size(elementsize*2+1,elementsize*2+1),Point(-1,-1));
+	Mat kernel= getStructuringElement(MORPH_RECT,Size(elementsize+1,elementsize+1),Point(-1,-1));
    	dilate(midImage2,midImage2,kernel);
 	//imshow("膨胀图像",midImage2);
 	//elementsize =3;
@@ -130,9 +133,9 @@ int main( int argc, char** argv )
 		
 		
 		}
-		imshow("final",srcImage);
-		
 
+
+	
 
 	waitKey(0);
 
