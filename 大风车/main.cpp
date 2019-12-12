@@ -22,7 +22,7 @@ double getDistance(Point A, Point B)
 }
 
 //模板匹配函数
-/*double  templateMatch(Mat image,Mat tepl,Point &Point,int method)
+double  templateMatch(Mat image,Mat tepl,Point &Point,int method)
 {
     int result_cols = image.cols - tepl.cols + 1;
     int result_rows = image.rows - tepl.rows + 1;
@@ -38,11 +38,11 @@ double getDistance(Point A, Point B)
         {
         case CV_TM_SQDIFF:
         case CV_TM_SQDIFF_NORMED:
-            point = minLoc;
+            Point = minLoc;
             return minVal;
 
         default:
-            point = maxLoc;
+            Point = maxLoc;
             return maxVal;
 
         }
@@ -51,15 +51,57 @@ double getDistance(Point A, Point B)
 
 
 
-}*/
+}
 
 
 
 int main( int argc, char** argv )
-{                float cnnt =0;
+{
+
+    //输入模板图片
+
+    Mat templ[9];
+    templ[1]=imread("template1",IMREAD_GRAYSCALE);
+    templ[2]=imread("template2",IMREAD_GRAYSCALE);
+    templ[3]=imread("template3",IMREAD_GRAYSCALE);
+    templ[4]=imread("template4",IMREAD_GRAYSCALE);
+    templ[5]=imread("template5",IMREAD_GRAYSCALE);
+    templ[6]=imread("template6",IMREAD_GRAYSCALE);
+    templ[7]=imread("template7",IMREAD_GRAYSCALE);
+    templ[8]=imread("template8",IMREAD_GRAYSCALE);
+
+
+
+
+
+    for(int num=1;num<=8;num++)
+    {
+
+        if(templ[num].empty())
+        {
+
+            cout<<"read error"<<endl;
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+               float cnnt =0;
     //读取图片
     Mat srcImage=imread("1.png");
-   // imshow("原始图",srcImage);
+    imshow("原始图",srcImage);
     //分离颜色通道
     vector<Mat> imgChannels;
     split(srcImage,imgChannels);
@@ -102,15 +144,8 @@ int main( int argc, char** argv )
         {
             rect_tmp2=minAreaRect(contours[i]);
             Point2f P[4];
-
             rect_tmp2.points(P);
-	    /*
-            for(int j=0;j<4;j++)
-            {
-                line(srcImage,P[j],P[(j+1)%4],Scalar(0,255,0),2,LINE_AA);
 
-
-            }*/
 
 
 
@@ -150,7 +185,7 @@ int main( int argc, char** argv )
             double area=height*width;
             if(area>5000)
             {
-		//画出轮廓的外接矩形
+       		 //画出轮廓的外接矩形
                 for(int j=0;j<4;j++)
                 {
                     line(srcImage,P[j],P[(j+1)%4],Scalar (255,200,200),3,LINE_AA);
@@ -194,13 +229,64 @@ int main( int argc, char** argv )
                 resize(testim,tmp1,Size(42,20));
 
                 imshow("temp1",tmp1);
-
+		
+		//将获取的图像和模板图片进行对比
                 vector<double> Vvalue1;
                 vector<double> Vvalue2;
+                int a;
+                for(a=1;a<=6;a++);
+                {
+                    value =templateMatch(tmp1,templ[a],matchLoc,TM_CCOEFF_NORMED);
+                    Vvalue1.push_back(value);
 
-                //for(int j=1;j<=6;j++);
+                }
+
+                for(a=7; a<=8;a++)
+                {
+                    value =templateMatch(tmp1,templ[a],matchLoc,TM_CCOEFF_NORMED);
+                    Vvalue2.push_back(value);
 
 
+                }
+
+                int maxv1 =0,maxv2=0;
+
+                for(int t1=0;t1<6;t1++)
+                {
+
+                    if(Vvalue1[t1]>Vvalue1[maxv1])
+                    {
+                        maxv1 =t1;
+                    }
+
+                }
+                for(int t2=0;t2<2;t2++)
+                {
+                    if(Vvalue2[t2]>Vvalue2[maxv2])
+                    {
+                        maxv2 =t2;
+                    }
+
+
+                }
+
+                cout <<Vvalue1[maxv1]<<endl;
+                cout <<Vvalue2[maxv2]<<endl;
+
+
+ 		//根据对比完的条件画出目标               
+                if(Vvalue1[maxv1]>Vvalue2[maxv2]&&Vvalue1[maxv1]>0.6)
+                {
+                    for(int j1=0;j1<4;j1++)
+                    {
+                        line(srcImage,P[j1],P[(j1+1)%4],Scalar (0,255,0),3,LINE_AA);
+
+
+                    }
+
+
+
+                }
 
 
 
@@ -211,17 +297,19 @@ int main( int argc, char** argv )
 
             }
 
-         imshow("final",srcImage);
-
 
 
 
         }
+     imshow("final",srcImage);
+     waitKey(0);
 
 
 
 
-    waitKey(0);
+
+
+
 
 }
 
