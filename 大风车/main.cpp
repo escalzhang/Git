@@ -24,11 +24,12 @@ double getDistance(Point A, Point B)
 //模板匹配函数
 double  templateMatch(Mat image,Mat tepl,Point &Point,int method)
 {
+    imshow("11",tepl);
     int result_cols = image.cols - tepl.cols + 1;
     int result_rows = image.rows - tepl.rows + 1;
     //    cout <<result_cols<<" "<<result_rows<<endl;
         cv::Mat result = cv::Mat( result_cols, result_rows, CV_32FC1 );
-        cv::matchTemplate( image, tepl, result, method );
+        cv::matchTemplate(image, tepl, result, method );
 
         double minVal, maxVal;
         cv::Point minLoc, maxLoc;
@@ -49,17 +50,20 @@ double  templateMatch(Mat image,Mat tepl,Point &Point,int method)
 
 
 
-
-
 }
 
 
 
 int main( int argc, char** argv )
 {
+    VideoCapture capture;
+    capture.open("2.avi");
+
+    while(1)
+    {
+
 
     //输入模板图片
-
     Mat templ[9];
     templ[1]=imread("template1",IMREAD_GRAYSCALE);
     templ[2]=imread("template2",IMREAD_GRAYSCALE);
@@ -69,7 +73,6 @@ int main( int argc, char** argv )
     templ[6]=imread("template6",IMREAD_GRAYSCALE);
     templ[7]=imread("template7",IMREAD_GRAYSCALE);
     templ[8]=imread("template8",IMREAD_GRAYSCALE);
-
 
 
 
@@ -85,27 +88,21 @@ int main( int argc, char** argv )
 
     }
 
+  /*
 
+*/
 
+               int cnnt =0;
+    Mat srcImage;
+    capture>>srcImage;
 
-
-
-
-
-
-
-
-
-
-
-               float cnnt =0;
     //读取图片
-    Mat srcImage=imread("1.png");
-    imshow("原始图",srcImage);
+    //srcImage=imread("1.png");
+
+
     //分离颜色通道
     vector<Mat> imgChannels;
     split(srcImage,imgChannels);
-
 
     //过滤颜色
     //敌人为蓝色
@@ -113,10 +110,11 @@ int main( int argc, char** argv )
 
     //敌人为红色
     Mat midImage2 = imgChannels.at(2)-imgChannels.at(0);
+    //imshow("112222",midImage2);
 
     //二值化
     threshold(midImage2,midImage2,100,255,THRESH_BINARY);
-        //imshow("二值化图像",midImage2);
+        imshow("二值化图像",midImage2);
 
     //图像形态学操作：膨胀和开操作
     int elementsize=2;
@@ -126,7 +124,7 @@ int main( int argc, char** argv )
     //elementsize =3;
     kernel= getStructuringElement(MORPH_RECT,Size(elementsize*2+1,elementsize*2+1),Point(-1,-1));
     morphologyEx(midImage2,midImage2,CV_MOP_CLOSE,kernel);
-    //imshow("开操作",midImage2);
+    imshow("开操作",midImage2);
 
 
 
@@ -185,13 +183,14 @@ int main( int argc, char** argv )
             double area=height*width;
             if(area>5000)
             {
-       		 //画出轮廓的外接矩形
+             //画出轮廓的外接矩形
                 for(int j=0;j<4;j++)
                 {
                     line(srcImage,P[j],P[(j+1)%4],Scalar (255,200,200),3,LINE_AA);
 
 
                 }
+                imshow("112222",srcImage);
                 cout <<hierarchy[i]<<endl;
 
                 dstRect[0]=Point2f(0,0);
@@ -203,7 +202,7 @@ int main( int argc, char** argv )
                 Mat perspectMat;
                 warpPerspective(midImage2,perspectMat,transform,midImage2.size(),INTER_LINEAR);
 
-                imshow("warpdst",perspectMat);
+                //imshow("warpdst",perspectMat);
 
                 Mat testim;
                 testim = perspectMat(Rect(0,0,width,height));
@@ -211,10 +210,10 @@ int main( int argc, char** argv )
 
                 //保存模板图片
                 string s="leaf"+to_string((int)cnnt);
-                cnnt++;
+
                 imwrite("./img/"+s+".jpg",testim);
 
-                imshow("testim",testim);
+                //imshow("testim",testim);
 
                 if(testim.empty())
                 {
@@ -227,23 +226,25 @@ int main( int argc, char** argv )
                 double value;
                 Mat tmp1;
                 resize(testim,tmp1,Size(42,20));
+                imwrite("./tmp/"+s+".jpg",tmp1);
+                cnnt++;
+                //imshow("temp1",tmp1);
 
-                imshow("temp1",tmp1);
-		
-		//将获取的图像和模板图片进行对比
+        //将获取的图像和模板图片进行对比
                 vector<double> Vvalue1;
                 vector<double> Vvalue2;
-                int a;
-                for(a=1;a<=6;a++);
+
+                   int c=1;
+                for(;c<7;c++)
                 {
-                    value =templateMatch(tmp1,templ[a],matchLoc,TM_CCOEFF_NORMED);
-                    Vvalue1.push_back(value);
+                    value =templateMatch(tmp1,templ[c],matchLoc,5);
+                   Vvalue1.push_back(value);
 
                 }
-
-                for(a=7; a<=8;a++)
+int b;
+                for(b=7; b<=8;b++)
                 {
-                    value =templateMatch(tmp1,templ[a],matchLoc,TM_CCOEFF_NORMED);
+                    value =templateMatch(tmp1,templ[b],matchLoc,5);
                     Vvalue2.push_back(value);
 
 
@@ -253,6 +254,7 @@ int main( int argc, char** argv )
 
                 for(int t1=0;t1<6;t1++)
                 {
+                   // cout <<Vvalue1[t1]<<endl;
 
                     if(Vvalue1[t1]>Vvalue1[maxv1])
                     {
@@ -260,8 +262,11 @@ int main( int argc, char** argv )
                     }
 
                 }
+                cout<<endl;
+
                 for(int t2=0;t2<2;t2++)
                 {
+                    //cout<<Vvalue2[t2]<<endl;
                     if(Vvalue2[t2]>Vvalue2[maxv2])
                     {
                         maxv2 =t2;
@@ -269,12 +274,18 @@ int main( int argc, char** argv )
 
 
                 }
-
+                //cout <<endl;
                 cout <<Vvalue1[maxv1]<<endl;
                 cout <<Vvalue2[maxv2]<<endl;
 
+                cout<<"--------------------------------------------------------------"<<endl;
+        //根据对比完的条件画出目标
+                /*if(Vvalue1[maxv1]>1||Vvalue1[maxv1]<0)
+                 {Vvalue1[maxv1]=1;}
 
- 		//根据对比完的条件画出目标               
+                 if(Vvalue2[maxv2]>1||Vvalue2[maxv2]<0)
+                   {Vvalue2[maxv2]=0;}
+                */
                 if(Vvalue1[maxv1]>Vvalue2[maxv2]&&Vvalue1[maxv1]>0.6)
                 {
                     for(int j1=0;j1<4;j1++)
@@ -286,9 +297,12 @@ int main( int argc, char** argv )
 
 
 
+
                 }
 
 
+                cout <<Vvalue1[maxv1]<<endl;
+                cout <<Vvalue2[maxv2]<<endl;
 
 
 
@@ -301,10 +315,15 @@ int main( int argc, char** argv )
 
 
         }
-     imshow("final",srcImage);
-     waitKey(0);
 
 
+    //imshow("final",srcImage);
+    //waitKey(0);
+
+   imshow("avi",srcImage);
+    waitKey(30);
+
+}
 
 
 
