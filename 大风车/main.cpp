@@ -51,15 +51,72 @@ double  templateMatch(Mat image,Mat tepl,Point &Point,int method)
 
 
 }
+//min2
+static bool CircleInfo2(std::vector<cv::Point2f>& pts, cv::Point2f& center, float& radius)
+{
+    center = cv::Point2d(0, 0);
+    radius = 0.0;
+    if (pts.size() < 3) return false;;
 
+    double sumX = 0.0;
+    double sumY = 0.0;
+    double sumX2 = 0.0;
+    double sumY2 = 0.0;
+    double sumX3 = 0.0;
+    double sumY3 = 0.0;
+    double sumXY = 0.0;
+    double sumX1Y2 = 0.0;
+    double sumX2Y1 = 0.0;
+    const double N = (double)pts.size();
+    for (int i = 0; i < pts.size(); ++i)
+    {
+        double x = pts.at(i).x;
+        double y = pts.at(i).y;
+        double x2 = x * x;
+        double y2 = y * y;
+        double x3 = x2 *x;
+        double y3 = y2 *y;
+        double xy = x * y;
+        double x1y2 = x * y2;
+        double x2y1 = x2 * y;
+
+        sumX += x;
+        sumY += y;
+        sumX2 += x2;
+        sumY2 += y2;
+        sumX3 += x3;
+        sumY3 += y3;
+        sumXY += xy;
+        sumX1Y2 += x1y2;
+        sumX2Y1 += x2y1;
+    }
+    double C = N * sumX2 - sumX * sumX;
+    double D = N * sumXY - sumX * sumY;
+    double E = N * sumX3 + N * sumX1Y2 - (sumX2 + sumY2) * sumX;
+    double G = N * sumY2 - sumY * sumY;
+    double H = N * sumX2Y1 + N * sumY3 - (sumX2 + sumY2) * sumY;
+
+    double denominator = C * G - D * D;
+    if (std::abs(denominator) < DBL_EPSILON) return false;
+    double a = (H * D - E * G) / (denominator);
+    denominator = D * D - G * C;
+    if (std::abs(denominator) < DBL_EPSILON) return false;
+    double b = (H * C - E * D) / (denominator);
+    double c = -(a * sumX + b * sumY + sumX2 + sumY2) / N;
+
+    center.x = a / (-2);
+    center.y = b / (-2);
+    radius = std::sqrt(a * a + b * b - 4 * c) / 2;
+    return true;
+}
 
 
 int main( int argc, char** argv )
 {
-    VideoCapture capture;
-    capture.open("2.avi");
-
-    while(1)
+   VideoCapture capture;
+    capture.open("1.avi");
+Mat drawcircle;
+   while(1)
     {
 
 
@@ -93,11 +150,12 @@ int main( int argc, char** argv )
 */
 
                int cnnt =0;
-    Mat srcImage;
-    capture>>srcImage;
+   Mat srcImage;
 
+   capture>>srcImage;
+   drawcircle=Mat(srcImage.rows,srcImage.cols, CV_8UC3, Scalar(0, 0, 0));
     //读取图片
-    //srcImage=imread("1.png");
+   // srcImage=imread("1.png");
 
 
     //分离颜色通道
@@ -114,7 +172,7 @@ int main( int argc, char** argv )
 
     //二值化
     threshold(midImage2,midImage2,100,255,THRESH_BINARY);
-        imshow("二值化图像",midImage2);
+      //  imshow("二值化图像",midImage2);
 
     //图像形态学操作：膨胀和开操作
     int elementsize=2;
@@ -124,7 +182,7 @@ int main( int argc, char** argv )
     //elementsize =3;
     kernel= getStructuringElement(MORPH_RECT,Size(elementsize*2+1,elementsize*2+1),Point(-1,-1));
     morphologyEx(midImage2,midImage2,CV_MOP_CLOSE,kernel);
-    imshow("开操作",midImage2);
+    //imshow("开操作",midImage2);
 
 
 
@@ -184,14 +242,15 @@ int main( int argc, char** argv )
             if(area>5000)
             {
              //画出轮廓的外接矩形
-                for(int j=0;j<4;j++)
+               /* for(int j=0;j<4;j++)
                 {
                     line(srcImage,P[j],P[(j+1)%4],Scalar (255,200,200),3,LINE_AA);
 
 
                 }
-                imshow("112222",srcImage);
-                cout <<hierarchy[i]<<endl;
+                */
+              //  imshow("112222",srcImage);
+          //      cout <<hierarchy[i]<<endl;
 
                 dstRect[0]=Point2f(0,0);
                 dstRect[1]=Point2f(width,0);
@@ -275,10 +334,10 @@ int b;
 
                 }
                 //cout <<endl;
-                cout <<Vvalue1[maxv1]<<endl;
-                cout <<Vvalue2[maxv2]<<endl;
+                //cout <<Vvalue1[maxv1]<<endl;
+                //cout <<Vvalue2[maxv2]<<endl;
 
-                cout<<"--------------------------------------------------------------"<<endl;
+              //  cout<<"--------------------------------------------------------------"<<endl;
         //根据对比完的条件画出目标
                 /*if(Vvalue1[maxv1]>1||Vvalue1[maxv1]<0)
                  {Vvalue1[maxv1]=1;}
@@ -288,9 +347,64 @@ int b;
                 */
                 if(Vvalue1[maxv1]>Vvalue2[maxv2]&&Vvalue1[maxv1]>0.6)
                 {
-                    for(int j1=0;j1<4;j1++)
+                   /* for(int j1=0;j1<4;j1++)
                     {
                         line(srcImage,P[j1],P[(j1+1)%4],Scalar (0,255,0),3,LINE_AA);
+
+
+                    }
+                    */
+
+
+
+                    if(hierarchy[i][2]>=0)
+                    {
+
+                        RotatedRect rect_tmp=minAreaRect(contours[hierarchy[i][2]]);
+                        Point2f Pnt[4];
+                        rect_tmp.points(Pnt);
+                        /* const float maxHWRatio=0.7153846;
+                        const float maxArea=1300;
+                        const float minArea=1000;
+
+                        float width=rect_tmp.size.width;
+                        float height=rect_tmp.size.height;
+                        if(height>width)
+                        {
+                            float ttt=height;
+                            height =width;
+                            width =ttt;
+
+
+                        }
+                        float area =width*height;
+
+                        if(height/width>maxHWRatio||area>maxArea||area<minArea)
+                        {
+
+                            cout <<"hw "<<height/width<<"area "<<area<<endl;
+
+                           for(int j=0;j<4;++j)
+                            {
+                                line(srcImage,Pnt[j],Pnt[(j+1)%4],Scalar(255,0,255),4);
+
+                            }
+
+
+                            //circle(drawcircle,centerP,1,Scalar(0,0,255),1);
+
+
+                           // continue;
+
+
+
+                        }*/
+
+
+                        Point centerP=rect_tmp.center;
+                        //打击点
+                        circle(srcImage,centerP,2,Scalar(255,0,255),2);
+                        cout << "center：" << "x:"<<centerP.x<<" "<<"y:"<< centerP.y << endl;
 
 
                     }
@@ -298,11 +412,12 @@ int b;
 
 
 
+
                 }
 
 
-                cout <<Vvalue1[maxv1]<<endl;
-                cout <<Vvalue2[maxv2]<<endl;
+              //  cout <<Vvalue1[maxv1]<<endl;
+              //  cout <<Vvalue2[maxv2]<<endl;
 
 
 
@@ -321,11 +436,12 @@ int b;
     //waitKey(0);
 
    imshow("avi",srcImage);
-    waitKey(30);
+
+    waitKey(1);
 
 }
 
-
+//   imshow("2",drawcircle);
 
 
 
