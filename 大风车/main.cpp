@@ -1,16 +1,18 @@
 //只适用与C++11版本下
-
+#include <time.h>
 #include <math.h>
-#include<stdio.h>
+#include <stdio.h>
 #include <iostream>
-#include<string.h>
-#include<stdlib.h>
+#include <string.h>
+#include  <chrono>
+#include <stdlib.h>
 #include <opencv2/opencv.hpp>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 using namespace cv;
 using namespace std;
-
+clock_t start_time;
+clock_t end_time;
 
 //计算距离函数
 double getDistance(Point A, Point B)
@@ -24,7 +26,7 @@ double getDistance(Point A, Point B)
 //模板匹配函数
 double  templateMatch(Mat image,Mat tepl,Point &Point,int method)
 {
-    imshow("11",tepl);
+
     int result_cols = image.cols - tepl.cols + 1;
     int result_rows = image.rows - tepl.rows + 1;
     //    cout <<result_cols<<" "<<result_rows<<endl;
@@ -52,7 +54,7 @@ double  templateMatch(Mat image,Mat tepl,Point &Point,int method)
 
 }
 //min2
-static bool CircleInfo2(std::vector<cv::Point2f>& pts, cv::Point2f& center, float& radius)
+/*static bool CircleInfo2(std::vector<cv::Point2f>& pts, cv::Point2f& center, float& radius)
 {
     center = cv::Point2d(0, 0);
     radius = 0.0;
@@ -110,26 +112,29 @@ static bool CircleInfo2(std::vector<cv::Point2f>& pts, cv::Point2f& center, floa
     return true;
 }
 
-
+*/
 int main( int argc, char** argv )
 {
    VideoCapture capture;
     capture.open("1.avi");
 Mat drawcircle;
+Mat templ[9];
+templ[1]=imread("template1",IMREAD_GRAYSCALE);
+templ[2]=imread("template2",IMREAD_GRAYSCALE);
+templ[3]=imread("template3",IMREAD_GRAYSCALE);
+templ[4]=imread("template4",IMREAD_GRAYSCALE);
+templ[5]=imread("template5",IMREAD_GRAYSCALE);
+templ[6]=imread("template6",IMREAD_GRAYSCALE);
+templ[7]=imread("template7",IMREAD_GRAYSCALE);
+templ[8]=imread("template8",IMREAD_GRAYSCALE);
    while(1)
     {
+       start_time=clock();
 
+ auto t1 = chrono::high_resolution_clock::now();
 
     //输入模板图片
-    Mat templ[9];
-    templ[1]=imread("template1",IMREAD_GRAYSCALE);
-    templ[2]=imread("template2",IMREAD_GRAYSCALE);
-    templ[3]=imread("template3",IMREAD_GRAYSCALE);
-    templ[4]=imread("template4",IMREAD_GRAYSCALE);
-    templ[5]=imread("template5",IMREAD_GRAYSCALE);
-    templ[6]=imread("template6",IMREAD_GRAYSCALE);
-    templ[7]=imread("template7",IMREAD_GRAYSCALE);
-    templ[8]=imread("template8",IMREAD_GRAYSCALE);
+
 
 
 
@@ -194,14 +199,13 @@ Mat drawcircle;
 
     RotatedRect rect_tmp2;
     bool findTarget=0;
-
+auto t3 = chrono::high_resolution_clock::now();
     if(hierarchy.size())
         for(int i=0;i>=0;i=hierarchy[i][0])
         {
             rect_tmp2=minAreaRect(contours[i]);
             Point2f P[4];
             rect_tmp2.points(P);
-
 
 
 
@@ -234,10 +238,10 @@ Mat drawcircle;
 
 
             }
-            Scalar color(rand()&255,rand()&255,rand()&255);
+            //Scalar color(rand()&255,rand()&255,rand()&255);
             //drawContours(srcImage,contours,i,color,2,8,hierarchy);
             //drawContours(srcImage,contours,i,color,2,8,hierarchy);
-
+auto t4 = chrono::high_resolution_clock::now();
             double area=height*width;
             if(area>5000)
             {
@@ -268,24 +272,24 @@ Mat drawcircle;
 
 
                 //保存模板图片
-                string s="leaf"+to_string((int)cnnt);
+                //string s="leaf"+to_string((int)cnnt);
 
-                imwrite("./img/"+s+".jpg",testim);
+               // imwrite("./img/"+s+".jpg",testim);
 
                 //imshow("testim",testim);
 
-                if(testim.empty())
-                {
-                    cout<<"filed open"<<endl;
-                    return -1;
+               // if(testim.empty())
+                //{
+                //    cout<<"filed open"<<endl;
+                //    return -1;
 
-                }
+                //}
 
                 Point matchLoc;
                 double value;
                 Mat tmp1;
                 resize(testim,tmp1,Size(42,20));
-                imwrite("./tmp/"+s+".jpg",tmp1);
+                //imwrite("./tmp/"+s+".jpg",tmp1);
                 cnnt++;
                 //imshow("temp1",tmp1);
 
@@ -300,7 +304,7 @@ Mat drawcircle;
                    Vvalue1.push_back(value);
 
                 }
-int b;
+                int b;
                 for(b=7; b<=8;b++)
                 {
                     value =templateMatch(tmp1,templ[b],matchLoc,5);
@@ -420,6 +424,7 @@ int b;
               //  cout <<Vvalue2[maxv2]<<endl;
 
 
+              //  cout << "two period: " << (static_cast<chrono::duration<double, std::milli>>(t4 - t1)).count() << " ms" << endl;
 
 
 
@@ -436,9 +441,14 @@ int b;
     //waitKey(0);
 
    imshow("avi",srcImage);
+   end_time=clock() ;
+   auto t2 = chrono::high_resolution_clock::now();
+   // cout << "Total period: " << (static_cast<chrono::duration<double, std::milli>>(t2 - t1)).count() << " ms" << endl;
+   // cout << "one period: " << (static_cast<chrono::duration<double, std::milli>>(t3 - t1)).count() << " ms" << endl;
 
-    waitKey(1);
+    cout<<"time:"<<(double)(end_time-start_time)/CLOCKS_PER_SEC<<endl;
 
+  waitKey(1);
 }
 
 //   imshow("2",drawcircle);
